@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+    <head>
+        <link th:href="@{/css/style.css}" rel="stylesheet" type="text/css"/>
+        <meta charset="UTF-8">
+        <title>TOP</title>
+    </head>
+    <body>
+        <div class="header-contents">
+            <h1>掲示板</h1>
+        </div>
+        <div th:if="${errorMessages != null}">
+            <div class="errorMessages" th:each="errorMessage : ${errorMessages} ">
+                <li th:text="${errorMessage}"/>
+            </div>
+            <br />
+        </div>
+        <div class="userInfo">
+            <span th:text="${loginUser.name}" />さん、ようこそ！<br />
+            最終ログイン：<span th:text="${loginUser.loginTime}" />
+        </div>
+        <!--ユーザー管理画面表示フラグ-->
+        <div th:if="${isShowUserManage}">
+            <a th:href="@{/userManage}">
+                <input type="button" value="ユーザー管理画面">
+            </a>
+        </div>
+        <a th:href="@{/logout}">
+            <input type="button" value="ログアウト">
+        </a>
+        <a th:href="@{/newMessage}">
+            <input type="button" value="新規投稿">
+        </a>
+      <div th:if="${loginUser.branchId == 1}">
+          <a th:href="@{/count}">
+            <input type="button" value="投稿数">
+          </a>
+      </div>
+      <div th:if="${loginUser.branchId == 1 && loginUser.departmentId == 2}">
+          <a th:href="@{/ngWord}">
+              <input type="button" value="NGワード設定">
+          </a>
+      </div><br>
+        <div class="search">
+            <form action="./">
+                <input type="date" name="startDate" th:value="${startDate}">~<input type="date" name="endDate" th:value="${endDate}">
+                <textarea name="category" id="category">[[${category}]]</textarea>
+                <input type="submit" value="絞込">
+            </form>
+        </div>
+        <div class="message-icon" th:each="message : ${messages}">
+            <div th:if="${deleteErrorMessage != null && message.id == deleteErrorMessageId}">
+                <div class="errorMessages>">
+                    <li th:text="${deleteErrorMessage}"/>
+                </div>
+            </div>
+            <div class="title">
+                件名:<span th:text="${message.title}"/>
+            </div>
+            <div class="name">
+                投稿者:<span th:text="${message.userName}"/>
+            </div>
+            <div class="category">
+                カテゴリー:<span th:text="${message.category}"/>
+            </div>
+            <div class="content">
+                本文:<pre><span th:text="${message.text}"/></pre>
+            </div>
+            <div class="created-date">
+                投稿日時:<span th:text="${#dates.format(message.createdDate, 'yyyy/MM/dd HH:mm')}"/>
+            </div>
+                <div th:if="${message.userId == loginUser.id || loginUser.departmentId == 2 ||
+                (loginUser.branchId == message.branchId && loginUser.departmentId == 3 && message.departmentId == 4)}">
+                <div class="message-delete">
+                    <form th:method="delete" th:action="@{/deleteMessage/{id}(id=${message.id})}">
+                        <input type="hidden" name="messageUserId" id="messageUserId" th:value="${message.userId}">
+                        <input type="hidden" name="messageBranch" id="messageBranch" th:value="${message.branchId}">
+                        <input type="hidden" name="messageDepartment" id="messageDepartment" th:value="${message.departmentId}">
+                        <input type="submit" name="delete-button" value="投稿削除"/>
+                    </form>
+                </div><br />
+            </div><br>
+            <div class="read-button">
+                <!-- 既読だったら -->
+                <th:block th:if="${read.contains(message.id) == true}">
+                    <form th:method="post" th:action="@{/read/{id}(id=${message.id})}">
+                        <input type="submit" value="未読にする" class="toUnread">
+                    </form>
+                </th:block>
+                <th:block th:if="${read.contains(message.id) == false}">
+                    <form th:method="post" th:action="@{/read/{id}(id=${message.id})}">
+                        <input type="submit" value="既読にする" class="toRead">
+                    </form>
+                </th:block>
+            </div>
+            <br />
+            <div class="comment" th:each="comment : ${comments}">
+                <div th:if="${comment.messageId == message.id}">
+                    <div class="content">
+                        コメント内容：<pre><span th:text="${comment.text}"/></pre>
+                    </div>
+                    <div class="name">
+                        投稿者:<span th:text="${comment.userName}"/>
+                    </div>
+                    <div class="created-date">
+                        投稿日時:<span th:text="${#dates.format(comment.createdDate, 'yyyy/MM/dd HH:mm')}"/>
+                    </div>
+                    <div class="comment-delete">
+                        <div th:if="${comment.userId == loginUser.id}">
+                            <form th:method="delete" th:action="@{/deleteComment/{id}(id=${comment.id})}">
+                                <input type="hidden" name="commentBranch" id="commentBranch" th:value="${comment.Id}"/>
+                                <input type="hidden" name="commentUserId" id="commentUserId" th:value="${comment.userId}">
+                                <input type="submit" name="delete-button" value="コメント削除">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="comment-form">
+                コメント<br>
+                <div th:if="${commentErrorMessages != null && message.id == messageId}">
+                    <div class="errorMessages" th:each="commentErrorMessage : ${commentErrorMessages}">
+                        <li th:text="${commentErrorMessage}"/><br>
+                    </div>
+                </div>
+                <form method="post" th:action="@{/commentAdd/{messageId}(messageId=${message.id})}" th:object="${commentForm}">
+                    <textarea  th:field="*{text}" rows="5" cols="30"></textarea><br>
+                    <input type="submit" value="投稿"/>
+                </form>
+            </div><br>
+        </div>
+        <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+        <script th:src="@{/js/main.js}"></script>
+    </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <link th:href="@{/css/style.css}" rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <title>投稿数</title>
+  </head>
+  <body>
+    <h2>NGワード設定</h2>
+    <div th:if="${errorMessages != null}">
+      <div class="new-errorMessages" th:each="errorMessage : ${errorMessages}">
+        <li th:text="${errorMessage}"/><br>
+      </div>
+    </div>
+    <div class="ng-word-form">
+      <form th:action="@{/add/ngWord}" method="post" th:object="${ngWord}">
+        <input type="text" name="ngWord" id="ngWord">
+        <input type="submit" value="登録">
+      </form>
+    </div>
+    <table class="ng-words-list" >
+      <tr>
+        <th>登録済みNGワード</th>
+      </tr>
+      <div th:each="ngWord : ${ngWords}">
+      <tr>
+          <td>
+            <form th:action="@{/edit/{id}(id=${ngWord.id})}" th:method="put" th:object="${ngWord}">
+              <input type="text" name="ngWord" th:value="${ngWord.ngWord}"/>
+              <input type="submit" value="更新">
+            </form>
+          </td>
+          <td>
+            <form th:action="@{deleteNgWord/{id}(id=${ngWord.id})}" th:method="delete">
+                <input type="submit" name="delete-button" value="削除">
+            </form>
+          </td>
+      </tr>
+      </div>
+    </table>
+    <a th:href="@{/}">
+      <input type="button" value="戻る">
+    </a>
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+  </body>
+</html>

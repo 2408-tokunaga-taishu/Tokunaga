@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>ユーザ登録</title>
+</head>
+<body>
+<h2>ユーザ編集</h2>
+<div th:if="${errorMessages != null}">
+    <div class="errorMessages" th:each="errorMessage : ${errorMessages} ">
+        <li th:text="${errorMessage}"/>
+    </div>
+    <br />
+</div>
+<form th:method="put" th:action="@{/userEdit/{id}(id=${userForm.id})}" th:object="${userForm}">
+    <div class="form-area">
+        <div class="account">
+            アカウント名
+            <input type="text" th:field="*{account}" /><br/>
+        </div>
+        <br />
+        <div class="password">
+            パスワード
+            <input type="password" th:field="*{password}" /><br/>
+        </div>
+        <br />
+        <div class="confirm-password">
+            パスワード(確認用)
+            <input type="password" th:field="*{passCheck}" /><br/>
+        </div>
+        <br />
+        <div class="userName">
+            氏名
+            <input th:field="*{name}" /><br/>
+        </div>
+        <br />
+        <!-- ログインしているユーザ自身は自分の支社と部署を編集できないようdisabledオプションを設定 -->
+        <div th:if="${loginUser.id == userForm.id}">
+            <div class="branch">
+                支社
+                <select th:field="*{branchId}" disabled>
+                    <option value="">選択してください</option>
+                    <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name}"></option>
+                </select>
+                <br/>
+            </div>
+            <br />
+            <div class="department">
+                部署
+                <select th:field="*{departmentId}" disabled>
+                    <option value="">選択してください</option>
+                    <option th:each="department : ${departments}" th:value="${department.id}" th:text="${department.name}"></option>
+                </select>
+            </div>
+        </div>
+        <!-- ログインユーザ以外のデータを変更する場合以下を表示 -->
+        <div th:if="${loginUser.id != userForm.id}">
+            <div class="branch">
+                支社
+                <select th:field="*{branchId}">
+                    <option value="">選択してください</option>
+                    <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name}"></option>
+                </select>
+                <br/>
+            </div>
+            <br />
+            <div class="department">
+                部署
+                <select th:field="*{departmentId}">
+                    <option value="">選択してください</option>
+                    <option th:each="department : ${departments}" th:value="${department.id}" th:text="${department.name}"></option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+        <div class="isStopped">
+            <input type="hidden" th:field="*{isStopped}">
+        </div>
+        <br />
+        <input type="submit" value="編集">
+    </div>
+</form>
+<br />
+<div class="footer-contents">
+    <a th:href="@{/userManage}">
+        <input type="button" value="戻る">
+    </a>
+</div>
+</body>
+</html>

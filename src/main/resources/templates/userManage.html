@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>ユーザ管理画面</title>
+</head>
+<body>
+    <h2>ユーザ管理画面</h2>
+    <div th:if="${errorMessages != null}">
+        <div class="errorMessages" th:each="errorMessage : ${errorMessages} ">
+            <li th:text="${errorMessage}"/>
+        </div>
+        <br />
+    </div>
+    <a th:href="@{/userCreate}">
+        <button class="create-user" type="button">ユーザ新規作成</button>
+    </a>
+    <div>
+        <a th:href="@{/}">
+            <input type="button" value="戻る">
+        </a>
+    </div><br>
+    <table class="users">
+        <tr class="usersTableTitle">
+            <th>アカウント名</th>
+            <th>氏名</th>
+            <th>支社名</th>
+            <th>部署名</th>
+            <th>ユーザー停止状態</th>
+            <th>編集</th>
+            <th>稼働状態切り替え</th>
+        </tr>
+        <div th:each="user : ${users}">
+            <tr>
+                <td>
+                    <p th:text="${user.account}" />
+                </td>
+                <td>
+                    <p th:text="${user.name}" />
+                </td>
+                <td>
+                    <th:block th:switch="${user.branchId}">
+                        <span th:case=1 th:text="本社" />
+                        <span th:case=2 th:text="A支社" />
+                        <span th:case=3 th:text="B支社" />
+                        <span th:case=4 th:text="C支社" />
+                    </th:block>
+                </td>
+                <td>
+                    <th:block th:switch="${user.departmentId}">
+                        <span th:case=1 th:text="総務人事部" />
+                        <span th:case=2 th:text="情報管理部" />
+                        <span th:case=3 th:text="営業部" />
+                        <span th:case=4 th:text="技術部" />
+                    </th:block>
+                <td>
+                    <th:block th:switch="${user.isStopped}">
+                        <span th:case=0 th:text="稼働状態" />
+                        <span th:case=1 th:text="停止状態" />
+                    </th:block>
+                </td>
+                <td>
+                    <a th:href="@{/userEdit/{id}(id=${user.id})}">
+                        <button class="edit-user" type="button">編集</button>
+                    </a>
+                </td>
+                <td>
+                    <div th:if="${loginUser.id != user.id}">
+                        <div th:if="${user.isStopped == 0}">
+                            <form th:method="put" th:action="@{/{id}(id=${user.id})}">
+                                <input type="submit" value="停止" name="isStopped-button" class="off">
+                            </form>
+                        </div>
+                        <div th:if="${user.isStopped == 1}">
+                            <form th:method="put" th:action="@{/{id}(id=${user.id})}">
+                                <input type="submit" value="復活" name="isStopped-button" class="on">
+                            </form>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </div>
+    </table>
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
