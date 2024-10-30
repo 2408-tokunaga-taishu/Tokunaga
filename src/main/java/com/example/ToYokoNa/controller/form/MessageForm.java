@@ -36,4 +36,6 @@ public class MessageForm {
     private Date updatedDate;
 
     private UserForm user;
+
+
 }

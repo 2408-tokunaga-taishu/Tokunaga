@@ -67,8 +67,10 @@
                 本文:<pre><span th:text="${message.text}"/></pre>
             </div>
             <div class="created-date">
-                投稿日時:<span th:text="${#dates.format(message.createdDate, 'yyyy/MM/dd HH:mm')}"/>
+                <span th:text="${message.durationTime}"/>
+
             </div>
+
                 <div th:if="${message.userId == loginUser.id || loginUser.departmentId == 2 ||
                 (loginUser.branchId == message.branchId && loginUser.departmentId == 3 && message.departmentId == 4)}">
                 <div class="message-delete">

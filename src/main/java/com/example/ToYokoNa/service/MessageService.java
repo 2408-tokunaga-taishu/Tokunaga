@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -86,9 +87,39 @@ public class MessageService {
             userMessageForm.setCategory(message.getCategory());
             userMessageForm.setDepartmentId(message.getUser().getDepartmentId());
             userMessageForm.setBranchId(message.getUser().getBranchId());
+            userMessageForm.setDurationTime(durationDate(message.getCreatedDate()));
             messages.add(userMessageForm);
         }
         return messages;
+    }
+//    現在時刻との差分計算 分、時、日表記
+    private String durationDate(Date date) {
+        LocalDateTime createDate = toLocalDateTime(date);
+        LocalDateTime nowDate = toLocalDateTime(new Date());
+        Duration duration = Duration.between(createDate, nowDate);
+        Long seconds = duration.getSeconds();
+        String durationDate = "";
+        if (seconds < 3600 && seconds >= 60) {
+            long minute = duration.toMinutes();
+            durationDate = minute +"分前";
+        } else if (seconds >= 3600 && seconds < 86400) {
+            long hour = duration.toHours();
+            durationDate = hour +"時間前";
+        } else if (seconds >= 86400 && seconds < 31536000) {
+            long day = duration.toDays();
+            durationDate = day +"日前";
+        } else if (seconds < 60 ){
+            durationDate = seconds + "秒前";
+        } else {
+            durationDate =  new SimpleDateFormat("yyyy/MM/dd").format(date);
+        }
+        return durationDate;
+    }
+
+//    DateをLocalDateTimeに変換メソッド
+        private static LocalDateTime toLocalDateTime(Date date) {
+        Instant instant = date.toInstant();
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
     /*
     投稿追加処理

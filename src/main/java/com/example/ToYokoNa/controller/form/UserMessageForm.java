@@ -26,4 +26,6 @@ public class UserMessageForm {
 
     private Integer branchId;
 
+    private String durationTime;
+
 }
