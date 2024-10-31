@@ -243,6 +243,9 @@ public class UserController {
     @GetMapping("/logout")
     public ModelAndView logout () {
         session.removeAttribute("loginUser");
+        session.removeAttribute("startDate");
+        session.removeAttribute("endDate");
+        session.removeAttribute("category");
         ModelAndView mav = new ModelAndView();
         UserForm userForm = new UserForm();
         mav.setViewName("/userLogin");

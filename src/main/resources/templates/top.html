@@ -50,18 +50,25 @@
                 <input type="submit" value="絞込">
             </form>
         </div>
-            <ul class="pagination">
-                <li class="page-item">
-                    <a class="page-link" href="#" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+        <!-- ページリンク -->
+        <div>
+            <ul class="paging">
+                <li>
+                    <span th:if="${pages.first}">&lt;&lt;</span>
+                    <a th:if="${not pages.first}" th:href="@{${url}(page=0)}">&lt;&lt;</a>
+                </li>
+                <!-- 中間のページリンク -->
+                <li th:each="i:${#numbers.sequence(0, pages.totalPages -1)}">
+                    <span th:if="${i}==${pages.number}" th:text="${i+1}"></span>
+                    <a th:if="${i}!=${pages.number} and ${messages.size()} > 0" th:href="@{${url}(page=${i})}">
+                        <span th:text="${i+1}"></span>
                     </a>
                 </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                <!-- 末尾のページリンク -->
+                <li>
+                    <span th:if="${pages.last}">&gt;&gt;</span>
+                    <a th:unless="${pages.last}" th:href="@{${url}(page=(${pages.totalPages-1}))}">
+                        &gt;&gt;
                     </a>
                 </li>
             </ul>

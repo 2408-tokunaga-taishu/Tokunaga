@@ -9,8 +9,10 @@ import com.example.ToYokoNa.repository.MessageRepository;
 import com.example.ToYokoNa.repository.UserRepository;
 import com.example.ToYokoNa.repository.entity.Comment;
 import com.example.ToYokoNa.repository.entity.Message;
-import com.example.ToYokoNa.repository.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,43 +42,50 @@ public class MessageService {
     @Autowired
     UserRepository userRepository;
 
-    /*
-    全投稿取得処理
-     */
-    public List<UserMessageForm> findALLMessages(String startDate, String endDate, String category) throws ParseException {
-//       取得件数定数
-        int limit = 1000;
-//        絞込日付作成処理
+//    開始時間変換
+    private Date startConvert(String startDate) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        List<Message> results = new ArrayList<>();
+
         if (isBlank(startDate)) {
             startDate = "2022-01-01 00:00:00";
         } else {
             startDate = startDate + " 00:00:00";
         }
+        return sdf.parse(startDate);
+    }
+//    終了時間変換
+    private Date endConvert(String endDate) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (isBlank(endDate)) {
             endDate = sdf.format(new Date());
         } else {
             endDate = endDate + " 23:59:59";
         }
-        Date start = sdf.parse(startDate);
-        Date end = sdf.parse(endDate);
-
+        return sdf.parse(endDate);
+    }
+    /*
+    全投稿取得処理
+     */
+    public Page<UserMessageForm> findALLMessages(String startDate, String endDate, String category, Pageable pageable) throws ParseException {
+//       取得件数定数
+        int limit = 1000;
+//        絞込日付作成処理
+        Page<Message> results ;
+        Date start = startConvert(startDate);
+        Date end = endConvert(endDate);
         if (isBlank(category)) {
 //            カテゴリー情報なし投稿取得処理
-             results = messageRepository.findAllByOrderByCreateDateDesc(limit, start, end);
+             results = messageRepository.findAllByOrderByCreateDateDesc(start, end,pageable);
         } else {
 //            カテゴリー情報あり投稿取得処理
-            results = messageRepository.findAllByWHERECategoryOrderByCreateDateDesc(limit, start, end, category);
+            results = messageRepository.findAllByWHERECategoryOrderByCreateDateDesc(start, end, category,pageable);
         }
-
-        List<UserMessageForm> messages = setUserMessageForm(results);
-        return messages;
+        return setUserMessageForm(results, pageable);
     }
 
-    private List<UserMessageForm> setUserMessageForm(List<Message> results) {
-        List<UserMessageForm> messages = new ArrayList<>();
-        for (Message message : results) {
+    private Page<UserMessageForm> setUserMessageForm(Page<Message> results, Pageable pageable) {
+        List<UserMessageForm> userMessageForms = new ArrayList<>();
+        for (Message message : results.getContent()) {
             UserMessageForm userMessageForm = new UserMessageForm();
             userMessageForm.setId(message.getId());
             userMessageForm.setText(message.getText());
@@ -88,9 +97,9 @@ public class MessageService {
             userMessageForm.setDepartmentId(message.getUser().getDepartmentId());
             userMessageForm.setBranchId(message.getUser().getBranchId());
             userMessageForm.setDurationTime(durationDate(message.getCreatedDate()));
-            messages.add(userMessageForm);
+            userMessageForms.add(userMessageForm);
         }
-        return messages;
+        return new PageImpl<>(userMessageForms, pageable, results.getTotalElements());
     }
 //    現在時刻との差分計算 分、時、日表記
     private String durationDate(Date date) {

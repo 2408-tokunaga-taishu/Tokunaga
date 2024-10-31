@@ -1,11 +1,14 @@
 package com.example.ToYokoNa.controller;
 
 import com.example.ToYokoNa.controller.form.*;
+import com.example.ToYokoNa.repository.MessageRepository;
 import com.example.ToYokoNa.service.CommentService;
 import com.example.ToYokoNa.service.MessageService;
 import com.example.ToYokoNa.service.ReadService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,7 +20,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import static org.apache.logging.log4j.util.Strings.isBlank;
 
 @Controller
 public class MessageController {
@@ -33,6 +39,10 @@ public class MessageController {
 
     @Autowired
     ReadService readService;
+
+    @Autowired
+    MessageRepository messageRepository;
+
     /*
     Top画面表示処理
      */
@@ -40,11 +50,25 @@ public class MessageController {
     public ModelAndView top(@RequestParam(name = "startDate", required = false) String startDate,
                             @RequestParam(name = "endDate", required = false) String endDate,
                             @RequestParam(name = "category", required = false) String category,
+                            Pageable pageable,
                             Model model)
                             throws ParseException {
+        if (startDate != null) {
+            session.setAttribute("startDate", startDate);
+        }
+        if (endDate != null) {
+            session.setAttribute("endDate", endDate);
+        }
+        if (category != null) {
+        session.setAttribute("category", category);
+        }
         ModelAndView mav = new ModelAndView();
+        Page<UserMessageForm> pageList = messageService.findALLMessages((String) session.getAttribute("startDate"),
+                                                                       (String) session.getAttribute("endDate"),
+                                                                       (String) session.getAttribute("category"),
+                                                                       pageable);
+        List<UserMessageForm> messages = pageList.getContent();
         UserForm loginUser = (UserForm)session.getAttribute("loginUser");
-        List<UserMessageForm> messages = messageService.findALLMessages(startDate, endDate, category);
         List<UserCommentForm> comments = commentService.findAllComments();
         CommentForm commentForm = new CommentForm();
         List<Integer> readMessages = readService.findReadMessages(loginUser.getId());
@@ -56,12 +80,13 @@ public class MessageController {
         mav.addObject("commentForm", commentForm);
         mav.addObject("comments", comments);
         mav.addObject("messages", messages);
+        mav.addObject("pages", pageList);
         mav.addObject("errorMessages", session.getAttribute("errorMessages"));
         mav.addObject("loginUser", loginUser);
         mav.addObject("isShowUserManage", isShowUserManage);
-        mav.addObject("startDate", startDate);
-        mav.addObject("endDate", endDate);
-        mav.addObject("category", category);
+        mav.addObject("startDate", (String) session.getAttribute("startDate"));
+        mav.addObject("endDate", (String) session.getAttribute("endDate"));
+        mav.addObject("category", (String) session.getAttribute("category"));
         mav.addObject("messageId", model.getAttribute("messageId"));
         mav.addObject("commentErrorMessages", model.getAttribute("commentErrorMessages"));
         mav.addObject("read", readMessages);
