@@ -47,6 +47,7 @@ public class UserService {
         user.setBranchId(result.getBranchId());
         user.setDepartmentId(result.getDepartmentId());
         user.setIsStopped(result.getIsStopped());
+        user.setVersion(result.getVersion());
         return user;
     }
     /*
@@ -107,6 +108,7 @@ public class UserService {
         user.setDepartmentId(userForm.getDepartmentId());
         user.setIsStopped(userForm.getIsStopped());
         user.setUpdatedDate(new Date());
+        user.setVersion(userForm.getVersion());
         return user;
     }
 

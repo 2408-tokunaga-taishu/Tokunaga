@@ -156,7 +156,8 @@ public class UserController {
      */
     @PutMapping("/userEdit/{id}")
     public ModelAndView userEdit(@PathVariable int id, @Validated({UserForm.UserEdit.class}) UserForm userForm,
-                                 BindingResult result) throws Exception {
+                                 BindingResult result,
+                                 RedirectAttributes redirectAttributes) throws Exception {
         ModelAndView mav = new ModelAndView();
         List<String> errorMessages = new ArrayList<>();
         //パスワードの入力の有無チェック
@@ -174,6 +175,11 @@ public class UserController {
             userForm.setPassword(CipherUtil.encrypt(userForm.getPassword()));
             try {
                 userService.updateUser(userForm);
+                mav.setViewName("redirect:/userManage");
+                return mav;
+            } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+                errorMessages.add("ユーザーはすでに編集されています。もう一度やり直してください");
+                redirectAttributes.addFlashAttribute("errorMessages", errorMessages);
                 mav.setViewName("redirect:/userManage");
                 return mav;
             } catch (Exception e) {

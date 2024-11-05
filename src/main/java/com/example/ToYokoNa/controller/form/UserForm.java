@@ -107,4 +107,5 @@ public class UserForm {
     private String loginTime;
     private int messageCount;
     private int commentCount;
+    private long version;
 }

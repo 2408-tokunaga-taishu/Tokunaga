@@ -63,4 +63,8 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "department_id", insertable = false, updatable = false)
     private Department department;
+
+    @Column(name = "version")
+    @Version
+    private long version;
 }
