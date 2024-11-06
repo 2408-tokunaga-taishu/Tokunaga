@@ -3,6 +3,8 @@ package com.example.ToYokoNa.controller;
 import com.example.ToYokoNa.controller.form.BranchForm;
 import com.example.ToYokoNa.controller.form.DepartmentForm;
 import com.example.ToYokoNa.controller.form.UserForm;
+import com.example.ToYokoNa.repository.entity.loginUsers;
+import com.example.ToYokoNa.repository.loginUsersRepository;
 import com.example.ToYokoNa.service.BranchService;
 import com.example.ToYokoNa.service.DepartmentService;
 import com.example.ToYokoNa.service.UserService;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Controller
@@ -31,6 +34,8 @@ public class UserController {
     BranchService branchService;
     @Autowired
     DepartmentService departmentService;
+    @Autowired
+    loginUsersRepository loginUsersRepository;
     // ログイン画面表示
     @GetMapping("/userLogin")
     public ModelAndView login() {
@@ -62,10 +67,14 @@ public class UserController {
         UserForm userData;
         try {
             userData = userService.selectUser(userForm);
+            loginUsers loginUsers = loginUsersRepository.findByAccount(userData.getAccount());
             // もしユーザが停止している場合,もしくはユーザ情報が存在しない場合
             if (userData.getIsStopped() == 1) {
                 // 例外を投げてcatchで処理をする
                 throw new Exception("ログインに失敗しました");
+            }
+            if (loginUsers != null) {
+                throw new Exception("このアカウントはすでにログインされています");
             }
         } catch (Exception e) {
             // 設定したメッセージを取得しerrorMessageとしてhtmlに渡す
@@ -74,6 +83,7 @@ public class UserController {
             return mav;
         }
         // セッションに値をセット
+
         session.setAttribute("loginUser", userData);
         // topにリダイレクト
         mav.setViewName("redirect:/");
